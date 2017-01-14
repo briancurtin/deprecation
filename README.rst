@@ -1,6 +1,10 @@
 deprecation
 ===========
 
+.. image:: https://readthedocs.org/projects/deprecation/badge/?version=latest
+   :target: http://deprecation.readthedocs.io/en/latest/
+   :alt: Documentation Status
+
 The ``deprecation`` library provides a ``deprecated`` decorator and a
 ``fail_if_not_removed`` decorator for your tests. Together, the two
 enable the automation of several things:
@@ -16,6 +20,8 @@ enable the automation of several things:
        decorator can be told when it's time to entirely remove the code,
        which causes ``@fail_if_not_removed`` to raise an ``AssertionError``,
        causing either your unittest or py.test tests to fail.
+
+See http://deprecation.readthedocs.io/ for the full documentation.
 
 Installation
 ============
