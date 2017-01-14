@@ -9,17 +9,17 @@ The ``deprecation`` library provides a ``deprecated`` decorator and a
 ``fail_if_not_removed`` decorator for your tests. Together, the two
 enable the automation of several things:
 
-    1. The docstring of a deprecated method gets the deprecation details
-       appended to the end of it. If you generate your API docs direct
-       from your source, you don't need to worry about writing your own
-       notification. You also don't need to worry about forgetting to
-       write it. It's done for you.
-    2. Rather than having code live on forever because you only deprecated
-       it but never actually moved on from it, you can have your tests
-       tell you when it's time to remove the code. The ``@deprecated``
-       decorator can be told when it's time to entirely remove the code,
-       which causes ``@fail_if_not_removed`` to raise an ``AssertionError``,
-       causing either your unittest or py.test tests to fail.
+1. The docstring of a deprecated method gets the deprecation details
+   appended to the end of it. If you generate your API docs direct
+   from your source, you don't need to worry about writing your own
+   notification. You also don't need to worry about forgetting to
+   write it. It's done for you.
+2. Rather than having code live on forever because you only deprecated
+   it but never actually moved on from it, you can have your tests
+   tell you when it's time to remove the code. The ``@deprecated``
+   decorator can be told when it's time to entirely remove the code,
+   which causes ``@fail_if_not_removed`` to raise an ``AssertionError``,
+   causing either your unittest or py.test tests to fail.
 
 See http://deprecation.readthedocs.io/ for the full documentation.
 
@@ -47,22 +47,22 @@ Usage
 ...but doesn't Python ignore ``DeprecationWarning``?
 ====================================================
 
-Yes, by default since 2.7—and for good reason[#]_—and this works fine
+Yes, by default since 2.7—and for good reason [#]_ —and this works fine
 with that.
 
-    1. It often makes sense for you to run your tests with a ``-W`` flag or
-       the ``PYTHONWARNINGS`` environment variable so you catch warnings
-       in development and handle them appropriately. The warnings raised by
-       this library show up there, as they're subclasses of the built-in
-       ``DeprecationWarning``. See the `Command Line
-       <https://docs.python.org/2/using/cmdline.html#cmdoption-W>`_
-       and `Environment Variable
-       <https://docs.python.org/2/using/cmdline.html#envvar-PYTHONWARNINGS>`_
-       documentation for more details.
-    2. Even if you don't enable those things, the behavior of this library
-       remains the same. The docstrings will still be updated and the tests
-       will still fail when they need to. You'll get the benefits regardless
-       of what Python cares about ``DeprecationWarning``.
+1. It often makes sense for you to run your tests with a ``-W`` flag or
+   the ``PYTHONWARNINGS`` environment variable so you catch warnings
+   in development and handle them appropriately. The warnings raised by
+   this library show up there, as they're subclasses of the built-in
+   ``DeprecationWarning``. See the `Command Line
+   <https://docs.python.org/2/using/cmdline.html#cmdoption-W>`_
+   and `Environment Variable
+   <https://docs.python.org/2/using/cmdline.html#envvar-PYTHONWARNINGS>`_
+   documentation for more details.
+2. Even if you don't enable those things, the behavior of this library
+   remains the same. The docstrings will still be updated and the tests
+   will still fail when they need to. You'll get the benefits regardless
+   of what Python cares about ``DeprecationWarning``.
 
 ----
 
