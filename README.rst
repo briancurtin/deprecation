@@ -5,6 +5,9 @@ deprecation
    :target: http://deprecation.readthedocs.io/en/latest/
    :alt: Documentation Status
 
+.. image:: https://travis-ci.org/briancurtin/deprecation.svg?branch=master
+    :target: https://travis-ci.org/briancurtin/deprecation
+
 The ``deprecation`` library provides a ``deprecated`` decorator and a
 ``fail_if_not_removed`` decorator for your tests. Together, the two
 enable the automation of several things:
