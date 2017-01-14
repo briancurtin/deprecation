@@ -11,3 +11,6 @@ python:
 install: "pip install -r test-requirements.txt"
 # command to run tests
 script: python -m unittest discover
+after_success:
+  - coverage run -m unittest discover
+  - codecov
