@@ -19,7 +19,7 @@ Installation
 
  ::
 
-    pip install deprecation
+    pip install libdeprecation
 
 Using ``@deprecated``
 =====================
