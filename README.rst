@@ -34,7 +34,7 @@ Installation
 
  ::
 
-    pip install libdeprecation
+    pip install deprecation
 
 Usage
 =====

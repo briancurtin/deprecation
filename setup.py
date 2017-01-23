@@ -4,7 +4,7 @@ AUTHOR = "Brian Curtin"
 EMAIL = "brian@python.org"
 
 
-setup(name="libdeprecation",
+setup(name="deprecation",
       version="1.0",
       description="A library to handle automated deprecations",
       license="Apache 2",
