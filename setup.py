@@ -1,3 +1,4 @@
+import io
 from setuptools import setup
 
 AUTHOR = "Brian Curtin"
@@ -14,7 +15,7 @@ setup(name="deprecation",
       maintainer=AUTHOR,
       maintainer_email=EMAIL,
       keywords=["deprecation"],
-      long_description=open("README.rst").read(),
+      long_description=io.open("README.rst", encoding="utf-8").read(),
       py_modules=["deprecation"],
       classifiers=[
         "Development Status :: 5 - Production/Stable",
