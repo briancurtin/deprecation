@@ -180,7 +180,8 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
 
                 the_warning = cls(function.__name__, deprecated_in,
                                   removed_in, details)
-                warnings.warn(the_warning)
+                warnings.warn(the_warning, category=DeprecationWarning,
+                              stacklevel=2)
 
             return function(*args, **kwargs)
         return _inner
