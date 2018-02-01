@@ -6,7 +6,7 @@ EMAIL = "brian@python.org"
 
 
 setup(name="deprecation",
-      version="1.0.1",
+      version="1.1",
       description="A library to handle automated deprecations",
       license="Apache 2",
       url="http://deprecation.readthedocs.io/",
