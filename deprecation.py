@@ -9,10 +9,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from distutils import version
 import functools
 import warnings
+
+from packaging import version
 
 __version__ = "1.0"
 
@@ -128,13 +128,13 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
     # StrictVersion won't take a None or a "", so make whatever goes to it
     # is at least *something*.
     if current_version:
-        current_version = version.StrictVersion(current_version)
+        current_version = version.parse(current_version)
 
         if (removed_in
-           and current_version >= version.StrictVersion(removed_in)):
+                and current_version >= version.parse(removed_in)):
             is_unsupported = True
         elif (deprecated_in
-              and current_version >= version.StrictVersion(deprecated_in)):
+              and current_version >= version.parse(deprecated_in)):
             is_deprecated = True
     else:
         # If we can't actually calculate that we're in a period of
