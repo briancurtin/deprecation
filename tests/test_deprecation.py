@@ -43,6 +43,30 @@ class Test_deprecated(unittest2.TestCase):
 
                 self.assertEqual(fn.__doc__, test["__doc__"])
 
+    def test_multiline_docstring(self):
+        docstring = "summary line\n\ndetails\nand more details\n"
+        for test in [{"args": {},
+                      "__doc__": "%s\n*Deprecated*"},
+                     {"args": {"deprecated_in": "1.0"},
+                      "__doc__": "%s\n*Deprecated in 1.0.*"},
+                     {"args": {"deprecated_in": "1.0", "removed_in": "2.0"},
+                      "__doc__": "%s\n*Deprecated in 1.0, "
+                                 "to be removed in 2.0.*"},
+                     {"args": {"deprecated_in": "1.0", "removed_in": "2.0",
+                               "details": "some details"},
+                      "__doc__": "%s\n*Deprecated in 1.0, "
+                                 "to be removed in 2.0. some details*"}]:
+            with self.subTest(**test):
+                @deprecation.deprecated(**test["args"])
+                def fn():
+                    """summary line
+
+                    details
+                    and more details
+                    """
+
+                self.assertEqual(fn.__doc__, test["__doc__"] % docstring)
+
     def test_warning_raised(self):
         ret_val = "lololol"
 

@@ -14,6 +14,19 @@ def won():
     return 1
 
 
+@deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
+                        current_version=__version__,
+                        details="Use the ``one`` function instead")
+def uno():
+    """Esta función regresa 1
+
+    This is Spanish for 'This function returns 1'
+
+    This is also here to show that multiline docstrings work
+    """
+    return 1
+
+
 def one():
     """This function returns 1"""
     return 1
