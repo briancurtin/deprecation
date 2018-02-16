@@ -183,17 +183,13 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                 # summary, dedent'ed contents, and our
                 # deprecation_note.
 
-                # TODO(briancurtin): If this can ever drop 2.7 support,
-                # PEP 3132 iterable unpacking makes this much easier.
-                # summary, *contents = existing_docstring.splitlines()
-                lines = existing_docstring.splitlines()
-                summary = lines[0]
-                contents = lines[1:]
+                summary = existing_docstring[:pos]
+                contents = existing_docstring[pos:]
 
-                contents = "\n".join(contents)
-                function.__doc__ = "\n".join([summary,
-                                              textwrap.dedent(contents),
-                                              deprecation_note])
+                function.__doc__ = "".join([summary,
+                                            textwrap.dedent(contents),
+                                            "\n",
+                                            deprecation_note])
             else:
                 function.__doc__ = "\n\n".join([existing_docstring,
                                                 deprecation_note])
