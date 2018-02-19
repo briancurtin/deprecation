@@ -73,15 +73,31 @@ class Test_deprecated(unittest2.TestCase):
         for test in [{"args": {},  # No args just means deprecated
                       "warning": deprecation.DeprecatedWarning,
                       "message": "method is deprecated"},
+                     {"args": {"details": "do something else."},
+                      "warning": deprecation.DeprecatedWarning,
+                      "message": "method is deprecated. do something else."},
                      {"args": {"deprecated_in": "1.0",
                                "current_version": "2.0"},
                       "warning": deprecation.DeprecatedWarning,
                       "message": "method is deprecated as of 1.0."},
                      {"args": {"deprecated_in": "1.0",
+                               "removed_in": "3.0",
+                               "current_version": "2.0"},
+                      "warning": deprecation.DeprecatedWarning,
+                      "message": ("method is deprecated as of 1.0 "
+                                  "and will be removed in 3.0.")},
+                     {"args": {"deprecated_in": "1.0",
                                "removed_in": "2.0",
                                "current_version": "2.0"},
                       "warning": deprecation.UnsupportedWarning,
-                      "message": "method is unsupported as of 2.0."}]:
+                      "message": "method is unsupported as of 2.0."},
+                     {"args": {"deprecated_in": "1.0",
+                               "removed_in": "2.0",
+                               "current_version": "2.0",
+                               "details": "do something else."},
+                      "warning": deprecation.UnsupportedWarning,
+                      "message": ("method is unsupported as of 2.0. "
+                                  "do something else.")}]:
             with self.subTest(**test):
                 class Test(object):
                     @deprecation.deprecated(**test["args"])
