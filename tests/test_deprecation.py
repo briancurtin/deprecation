@@ -46,15 +46,15 @@ class Test_deprecated(unittest2.TestCase):
     def test_multiline_docstring(self):
         docstring = "summary line\n\ndetails\nand more details\n"
         for test in [{"args": {},
-                      "__doc__": "%s\n*Deprecated*"},
+                      "__doc__": "%s\n\n*Deprecated*"},
                      {"args": {"deprecated_in": "1.0"},
-                      "__doc__": "%s\n*Deprecated in 1.0.*"},
+                      "__doc__": "%s\n\n*Deprecated in 1.0.*"},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0"},
-                      "__doc__": "%s\n*Deprecated in 1.0, "
+                      "__doc__": "%s\n\n*Deprecated in 1.0, "
                                  "to be removed in 2.0.*"},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0",
                                "details": "some details"},
-                      "__doc__": "%s\n*Deprecated in 1.0, "
+                      "__doc__": "%s\n\n*Deprecated in 1.0, "
                                  "to be removed in 2.0. some details*"}]:
             with self.subTest(**test):
                 @deprecation.deprecated(**test["args"])

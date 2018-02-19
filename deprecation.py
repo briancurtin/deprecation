@@ -188,7 +188,7 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
 
                 function.__doc__ = "".join([summary,
                                             textwrap.dedent(contents),
-                                            "\n",
+                                            "\n\n",
                                             deprecation_note])
             else:
                 function.__doc__ = "\n\n".join([existing_docstring,
