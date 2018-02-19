@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import functools
+import textwrap
 import warnings
 
 from packaging import version
@@ -167,8 +168,31 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             deprecation_note = ("*Deprecated{deprecated_in}{removed_in}"
                                 "{period}{details}*".format(**parts))
 
-            function.__doc__ = "\n\n".join([existing_docstring,
+            pos = existing_docstring.find("\n")
+
+            if pos != -1:
+                # With a multi-line docstring, when we modify
+                # existing_docstring to add our deprecation_note,
+                # if we're not careful we'll interfere with the
+                # indentation levels of the contents below the
+                # first line, or as PEP 257 calls it, the summary
+                # line. Since the summary line can start on the
+                # same line as the """, dedenting the whole thing
+                # won't help. Split the summary and contents up,
+                # dedent the contents independently, then join
+                # summary, dedent'ed contents, and our
+                # deprecation_note.
+
+                summary = existing_docstring[:pos]
+                contents = existing_docstring[pos:]
+
+                function.__doc__ = "".join([summary,
+                                            textwrap.dedent(contents),
+                                            "\n\n",
                                             deprecation_note])
+            else:
+                function.__doc__ = "\n\n".join([existing_docstring,
+                                                deprecation_note])
 
         @functools.wraps(function)
         def _inner(*args, **kwargs):
