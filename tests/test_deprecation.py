@@ -71,14 +71,17 @@ class Test_deprecated(unittest2.TestCase):
         ret_val = "lololol"
 
         for test in [{"args": {},  # No args just means deprecated
-                      "warning": deprecation.DeprecatedWarning},
+                      "warning": deprecation.DeprecatedWarning,
+                      "message": "method is deprecated"},
                      {"args": {"deprecated_in": "1.0",
                                "current_version": "2.0"},
-                      "warning": deprecation.DeprecatedWarning},
+                      "warning": deprecation.DeprecatedWarning,
+                      "message": "method is deprecated as of 1.0."},
                      {"args": {"deprecated_in": "1.0",
                                "removed_in": "2.0",
                                "current_version": "2.0"},
-                      "warning": deprecation.UnsupportedWarning}]:
+                      "warning": deprecation.UnsupportedWarning,
+                      "message": "method is unsupported as of 2.0."}]:
             with self.subTest(**test):
                 class Test(object):
                     @deprecation.deprecated(**test["args"])
@@ -93,6 +96,8 @@ class Test_deprecated(unittest2.TestCase):
 
                 self.assertEqual(len(caught_warnings), 1)
                 self.assertEqual(caught_warnings[0].category, test["warning"])
+                self.assertEqual(str(caught_warnings[0].message),
+                                 test["message"])
 
     def test_DeprecatedWarning_not_raised(self):
         ret_val = "lololol"

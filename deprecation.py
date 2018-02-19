@@ -9,6 +9,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import collections
 import functools
 import textwrap
 import warnings
@@ -51,9 +52,22 @@ class DeprecatedWarning(DeprecationWarning):
         super(DeprecatedWarning, self).__init__()
 
     def __str__(self):
-        return ("%s is deprecated as of %s and will "
-                "be removed in %s. %s" % (self.function, self.deprecated_in,
-                                          self.removed_in, self.details))
+        # Use a defaultdict to give us the empty string
+        # when a part isn't included.
+        parts = collections.defaultdict(str)
+        parts["function"] = self.function
+
+        if self.deprecated_in:
+            parts["deprecated"] = " as of %s" % self.deprecated_in
+        if self.removed_in:
+            parts["removed"] = " and will be removed in %s" % self.removed_in
+        if any([self.deprecated_in, self.removed_in, self.details]):
+            parts["period"] = "."
+        if self.details:
+            parts["details"] = " %s" % self.details
+
+        return ("%(function)s is deprecated%(deprecated)s%(removed)s"
+                "%(period)s%(details)s" % (parts))
 
 
 class UnsupportedWarning(DeprecatedWarning):
@@ -67,9 +81,15 @@ class UnsupportedWarning(DeprecatedWarning):
     """
 
     def __str__(self):
-        return ("%s is unsupported as of %s. %s" % (self.function,
-                                                    self.removed_in,
-                                                    self.details))
+        parts = collections.defaultdict(str)
+        parts["function"] = self.function
+        parts["removed"] = self.removed_in
+
+        if self.details:
+            parts["details"] = " %s" % self.details
+
+        return ("%(function)s is unsupported as of %(removed)s."
+                "%(details)s" % (parts))
 
 
 def deprecated(deprecated_in=None, removed_in=None, current_version=None,
