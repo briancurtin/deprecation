@@ -19,10 +19,14 @@ from packaging import version
 __version__ = "1.0"
 
 # This is mostly here so automodule docs are ordered more ideally.
-__all__ = ["deprecated", "fail_if_not_removed",
-           "DeprecatedWarning", "UnsupportedWarning",
-           "message_location"]
+__all__ = ["deprecated", "message_location", "fail_if_not_removed",
+           "DeprecatedWarning", "UnsupportedWarning"]
 
+#: Location where the details are added to a deprecated docstring
+#:
+#: When set to ``"bottom"``, the details are appended to the end.
+#: When set to ``"top"``, the details are inserted between the
+#: summary line and docstring contents.
 message_location = "bottom"
 
 
