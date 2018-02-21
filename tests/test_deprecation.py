@@ -31,11 +31,12 @@ class Test_deprecated(unittest2.TestCase):
                       "__doc__": "docstring\n\n.. deprecated:: 1.0"},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0"},
                       "__doc__": "docstring\n\n.. deprecated:: 1.0"
-                                 "\n   To be removed in 2.0."},
+                                 "\n   This will be removed in 2.0."},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0",
                                "details": "some details"},
                       "__doc__": "docstring\n\n.. deprecated:: 1.0"
-                                 "\n   To be removed in 2.0. some details"}]:
+                                 "\n   This will be removed in 2.0. "
+                                 "some details"}]:
             with self.subTest(**test):
                 @deprecation.deprecated(**test["args"])
                 def fn():
@@ -51,11 +52,12 @@ class Test_deprecated(unittest2.TestCase):
                       "__doc__": "%s\n\n.. deprecated:: 1.0"},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0"},
                       "__doc__": "%s\n\n.. deprecated:: 1.0"
-                                 "\n   To be removed in 2.0."},
+                                 "\n   This will be removed in 2.0."},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0",
                                "details": "some details"},
                       "__doc__": "%s\n\n.. deprecated:: 1.0"
-                                 "\n   To be removed in 2.0. some details"}]:
+                                 "\n   This will be removed in 2.0. "
+                                 "some details"}]:
             with self.subTest(**test):
                 @deprecation.deprecated(**test["args"])
                 def fn():
@@ -76,12 +78,12 @@ class Test_deprecated(unittest2.TestCase):
                       "__doc__": "%s\n\n.. deprecated:: 1.0%s"},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0"},
                       "__doc__": "%s\n\n.. deprecated:: 1.0"
-                                 "\n   To be removed in 2.0.%s"},
+                                 "\n   This will be removed in 2.0.%s"},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0",
                                "details": "some details"},
                       "__doc__": "%s\n\n.. deprecated:: 1.0"
-                                 "\n   To be removed in 2.0. some details"
-                                 "%s"}]:
+                                 "\n   This will be removed in 2.0. "
+                                 "some details%s"}]:
             with self.subTest(**test):
                 deprecation.message_location = "top"
 

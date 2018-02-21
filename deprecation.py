@@ -162,7 +162,7 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                 "deprecated_in":
                     " %s" % deprecated_in if deprecated_in else "",
                 "removed_in":
-                    "\n   To be removed in %s." %
+                    "\n   This will be removed in %s." %
                     removed_in if removed_in else "",
                 "details":
                     " %s" % details if details else ""}
