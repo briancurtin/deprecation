@@ -16,6 +16,19 @@ def won():
 
 @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
                         current_version=__version__,
+                        details="Use the ``multiline_one`` function instead.")
+def multiline_bottom():
+    """This function returns 1.
+
+    Multiline Bottom. Deprecation Note is inserted at the bottom.
+
+    This is also here to show that multiline docstrings work
+    """
+    return 1
+
+
+@deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
+                        current_version=__version__,
                         details="Use the ``one`` function instead")
 def uno():
     """Esta función regresa 1
@@ -38,6 +51,23 @@ def one():
 def why():
     """This isn't necessary"""
     return None
+
+
+deprecation.message_location = 'top'
+
+
+@deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
+                        current_version=__version__,
+                        details="Use the ``multiline_one`` function instead.")
+def multiline_top():
+    """This function returns 1.
+
+    Multiline Top. Deprecation Note is inserted above this line. This is done
+    via setting ``deprecation.message_location`` to 'top'.
+
+    This is also here to show that multiline docstrings work
+    """
+    return 1
 
 
 class Tests(unittest2.TestCase):

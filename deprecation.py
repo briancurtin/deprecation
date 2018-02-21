@@ -19,7 +19,10 @@ __version__ = "1.0"
 
 # This is mostly here so automodule docs are ordered more ideally.
 __all__ = ["deprecated", "fail_if_not_removed",
-           "DeprecatedWarning", "UnsupportedWarning"]
+           "DeprecatedWarning", "UnsupportedWarning",
+           "message_location"]
+
+message_location = "bottom"
 
 
 class DeprecatedWarning(DeprecationWarning):
@@ -157,20 +160,23 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             # of the parts.
             parts = {
                 "deprecated_in":
-                    " in %s" % deprecated_in if deprecated_in else "",
+                    " %s" % deprecated_in if deprecated_in else "",
                 "removed_in":
-                    ", to be removed in %s" % removed_in if removed_in else "",
-                "period":
-                    "." if deprecated_in or removed_in or details else "",
+                    "\n   To be removed in %s." %
+                    removed_in if removed_in else "",
                 "details":
                     " %s" % details if details else ""}
 
-            deprecation_note = ("*Deprecated{deprecated_in}{removed_in}"
-                                "{period}{details}*".format(**parts))
+            deprecation_note = (".. deprecated::{deprecated_in}"
+                                "{removed_in}{details}".format(**parts))
 
-            pos = existing_docstring.find("\n")
+            # default location for insertion of deprecation note
+            loc = 1
 
-            if pos != -1:
+            # split docstring at first occurrence of newline
+            string_list = existing_docstring.split("\n", 1)
+
+            if len(string_list) > 1:
                 # With a multi-line docstring, when we modify
                 # existing_docstring to add our deprecation_note,
                 # if we're not careful we'll interfere with the
@@ -183,16 +189,22 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                 # summary, dedent'ed contents, and our
                 # deprecation_note.
 
-                summary = existing_docstring[:pos]
-                contents = existing_docstring[pos:]
+                # in-place dedent docstring content
+                string_list[1] = textwrap.dedent(string_list[1])
 
-                function.__doc__ = "".join([summary,
-                                            textwrap.dedent(contents),
-                                            "\n\n",
-                                            deprecation_note])
-            else:
-                function.__doc__ = "\n\n".join([existing_docstring,
-                                                deprecation_note])
+                # we need another newline
+                string_list.insert(loc, "\n")
+
+                # change the message_location if we add to end of docstring
+                # do this always if not "top"
+                if message_location != "top":
+                    loc = 3
+
+            # insert deprecation note and dual newline
+            string_list.insert(loc, deprecation_note)
+            string_list.insert(loc, "\n\n")
+
+            function.__doc__ = "".join(string_list)
 
         @functools.wraps(function)
         def _inner(*args, **kwargs):
