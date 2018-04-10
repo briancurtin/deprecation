@@ -6,7 +6,7 @@ EMAIL = "brian@python.org"
 
 
 setup(name="deprecation",
-      version="2.0",
+      version="2.0.1",
       description="A library to handle automated deprecations",
       license="Apache 2",
       url="http://deprecation.readthedocs.io/",
@@ -31,5 +31,8 @@ setup(name="deprecation",
           "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: Implementation :: CPython",
           "Programming Language :: Python :: Implementation :: PyPy",
-          "Topic :: Software Development :: Libraries :: Python Modules"]
+          "Topic :: Software Development :: Libraries :: Python Modules"],
+      project_urls={"Documentation": "http://deprecation.readthedocs.io/en/latest/",
+                    "Source": "https://github.com/briancurtin/deprecation",
+                    "Bug Tracker": "https://github.com/briancurtin/deprecation/issues"},
       )
