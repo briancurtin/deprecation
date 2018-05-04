@@ -100,7 +100,7 @@ class UnsupportedWarning(DeprecatedWarning):
 
 
 def deprecated(deprecated_in=None, removed_in=None, current_version=None,
-               details=""):
+               replaced_by=None, details=""):
     """Decorate a function to signify its deprecation
 
     This function wraps a method that will soon be removed and does two things:
@@ -135,10 +135,15 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                             does not work, causing a
                             :class:`~deprecation.DeprecatedWarning`
                             to be raised in all cases.
+    :param replaced_by: The code to replace that which is marked as
+                        deprecated. This can be the code object itself,
+                        such as the function or method to be used in the
+                        future, or it can be a string describing the
+                        replacement code. The string option can be helpful
+                        when the replacement code exists outside of the
+                        current scope.
     :param details: Extra details to be added to the method docstring and
-                    warning. For example, the details may point users to
-                    a replacement method, such as "Use the foo_bar
-                    method instead". By default there are no details.
+                    warning. By default there are no details.
     """
     # You can't just jump to removal. It's weird, unfair, and also makes
     # building up the docstring weird.
