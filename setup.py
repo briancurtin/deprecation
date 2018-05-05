@@ -32,7 +32,8 @@ setup(name="deprecation",
           "Programming Language :: Python :: Implementation :: CPython",
           "Programming Language :: Python :: Implementation :: PyPy",
           "Topic :: Software Development :: Libraries :: Python Modules"],
-      project_urls={"Documentation": "http://deprecation.readthedocs.io/en/latest/",
-                    "Source": "https://github.com/briancurtin/deprecation",
-                    "Bug Tracker": "https://github.com/briancurtin/deprecation/issues"},
+      project_urls={
+          "Documentation": "http://deprecation.readthedocs.io/en/latest/",
+          "Source": "https://github.com/briancurtin/deprecation",
+          "Bug Tracker": "https://github.com/briancurtin/deprecation/issues"},
       )
