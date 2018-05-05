@@ -1,12 +1,29 @@
 import io
+import re
+
 from setuptools import setup
 
 AUTHOR = "Brian Curtin"
 EMAIL = "brian@python.org"
 
 
+def _read_file():
+    with open("deprecation.py", "r") as f:
+        return f.read()
+
+
+FILE = _read_file()
+
+
+def get_version():
+    match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", FILE, re.M)
+    if match:
+        return match.group(1)
+    raise RuntimeError("Unable to find __version__ string.")
+
+
 setup(name="deprecation",
-      version="2.0.2",
+      version=get_version(),
       description="A library to handle automated deprecations",
       license="Apache 2",
       url="http://deprecation.readthedocs.io/",
