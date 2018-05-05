@@ -18,6 +18,21 @@ import warnings
 import deprecation
 
 
+def replacement():
+    pass
+
+
+class Replace:
+    def method(self):
+        """A method to replace something.
+
+        NOTE: This will be called a function by the replacement
+        text because we're not looking at an instance of the class
+        but at the class itself, so it's not technically a method
+        at that point."""
+        pass
+
+
 class Test_deprecated(unittest2.TestCase):
 
     def test_removing_without_deprecating(self):
@@ -29,6 +44,28 @@ class Test_deprecated(unittest2.TestCase):
                       "__doc__": "docstring\n\n.. deprecated::"},
                      {"args": {"deprecated_in": "1.0"},
                       "__doc__": "docstring\n\n.. deprecated:: 1.0"},
+                     {"args": {"deprecated_in": "1.0",
+                               "replaced_by": "replacement"},
+                      "__doc__": "docstring\n\n.. deprecated:: 1.0"
+                                 "\n   ``replacement`` will "
+                                 "replace ``fn``."},
+                     {"args": {"deprecated_in": "1.0",
+                               "replaced_by": replacement},
+                      "__doc__": "docstring\n\n.. deprecated:: 1.0"
+                                 "\n   The "
+                                 "``tests.test_deprecation.replacement`` "
+                                 "function will replace ``fn``."},
+                     {"args": {"deprecated_in": "1.0",
+                               "replaced_by": Replace.method},
+                      "__doc__": "docstring\n\n.. deprecated:: 1.0"
+                                 "\n   The "
+                                 "``tests.test_deprecation.Replace.method`` "
+                                 "function will replace ``fn``."},
+                     {"args": {"deprecated_in": "1.0",
+                               "replaced_by": deprecation},
+                      "__doc__": "docstring\n\n.. deprecated:: 1.0"
+                                 "\n   The ``deprecation`` module will "
+                                 "replace ``fn``."},
                      {"args": {"deprecated_in": "1.0", "removed_in": "2.0"},
                       "__doc__": "docstring\n\n.. deprecated:: 1.0"
                                  "\n   This will be removed in 2.0."},

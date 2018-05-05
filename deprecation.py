@@ -11,6 +11,7 @@
 # under the License.
 import collections
 import functools
+import inspect
 import textwrap
 import warnings
 
@@ -97,6 +98,44 @@ class UnsupportedWarning(DeprecatedWarning):
 
         return ("%(function)s is unsupported as of %(removed)s."
                 "%(details)s" % (parts))
+
+
+def _generate_replaced_by_text(current, replacement):
+    if replacement is None:
+        return ""
+
+    replacement_type = None
+
+    # Try to figure out what type the replacement object is.
+    # If it's not one we know, it's most likely a string
+    # which will mean we're going to reference it untyped,
+    # thus we'll introduce it without the "The" prefix to the sentence.
+    for predicate, type_name in {inspect.ismodule: "module",
+                                 inspect.isclass: "class",
+                                 inspect.isfunction: "function"}.items():
+        if predicate(replacement):
+            replacement_type = type_name
+            break
+
+    try:
+        if replacement_type in ("class", "function"):
+            # TODO(briancurtin): 2.x doesn't have __qualname__
+            replacement_name = ("{r.__module__}."
+                                "{r.__qualname__}").format(r=replacement)
+        else:
+            replacement_name = ("{r.__name__}").format(r=replacement)
+    except AttributeError:
+        # Accessing those dunder methods will mean we got a string,
+        # so use it directly.
+        replacement_name = replacement
+
+    return ("\n   {intro}``{replacement}``{space}{type_name} will "
+            "replace ``{current}``.").format(
+            intro="The " if replacement_type else "",
+            replacement=replacement_name,
+            space=" " if replacement_type else "",
+            type_name=replacement_type or "",
+            current=current.__name__)
 
 
 def deprecated(deprecated_in=None, removed_in=None, current_version=None,
@@ -190,13 +229,15 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             parts = {
                 "deprecated_in":
                     " %s" % deprecated_in if deprecated_in else "",
+                "replaced_by":
+                    _generate_replaced_by_text(function, replaced_by),
                 "removed_in":
                     "\n   This will be removed in %s." %
                     removed_in if removed_in else "",
                 "details":
                     " %s" % details if details else ""}
 
-            deprecation_note = (".. deprecated::{deprecated_in}"
+            deprecation_note = (".. deprecated::{deprecated_in}{replaced_by}"
                                 "{removed_in}{details}".format(**parts))
 
             # default location for insertion of deprecation note
