@@ -34,7 +34,7 @@ setup(name="deprecation",
       install_requires=["packaging"],
       keywords=["deprecation"],
       long_description=io.open("README.rst", encoding="utf-8").read(),
-      py_modules=["deprecation"],
+      py_modules=["deprecation", "sample"],
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "License :: OSI Approved :: Apache Software License",
