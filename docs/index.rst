@@ -12,7 +12,10 @@ proper warnings both in documentation and via Python's :mod:`warnings` system,
 as well as the :func:`deprecation.fail_if_not_removed` decorator for test
 methods to ensure that deprecated code is eventually removed.
 
-See `API Documentation`_ to jump straight into the options.
+See `API Documentation`_ to jump straight into the options. See the
+:doc:`sample` page for an example of ``deprecation``'s effect on a module's
+Sphinx `autodoc <http://www.sphinx-doc.org/en/master/ext/autodoc.html>`_
+generated documentation.
 
 Installation
 ============
@@ -50,7 +53,7 @@ To mark a function or method as deprecated, wrap it in the
         return 1
 
 Now look at the docs. If you you generate API documentation from your source
-like the :doc:`sample` module does, you'll see that the a sentence has been
+like the :doc:`sample` does, you'll see that the a sentence has been
 appended to a deprecated function's docstring to include information about
 when the function is deprecated, when it'll be removed, and what you can do
 instead. For example, run ``help(foo)`` and this is what you'll get:
