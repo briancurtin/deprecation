@@ -259,6 +259,8 @@ def fail_if_not_removed(method):
              :class:`~deprecation.UnsupportedWarning`
              is raised while running the test method.
     """
+    # NOTE(briancurtin): Unless this is named test_inner, nose won't work
+    # properly. See Issue #32.
     def test_inner(*args, **kwargs):
         with warnings.catch_warnings(record=True) as caught_warnings:
             warnings.simplefilter("always")
