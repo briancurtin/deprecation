@@ -259,7 +259,7 @@ def fail_if_not_removed(method):
              :class:`~deprecation.UnsupportedWarning`
              is raised while running the test method.
     """
-    def _inner(*args, **kwargs):
+    def test_inner(*args, **kwargs):
         with warnings.catch_warnings(record=True) as caught_warnings:
             warnings.simplefilter("always")
             rv = method(*args, **kwargs)
@@ -270,4 +270,4 @@ def fail_if_not_removed(method):
                     ("%s uses a function that should be removed: %s" %
                      (method, str(warning.message))))
         return rv
-    return _inner
+    return test_inner
