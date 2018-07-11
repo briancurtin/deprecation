@@ -290,18 +290,16 @@ def fail_if_not_removed(method):
 def _deprecated_wrapper(func, warning_class, object_name, deprecated_in,
                         removed_in, details):
     def new(*args, **kwargs):
-        #if not args[0].__warned__:
         if warning_class:
             _warn_user(
                 warning_class, object_name, deprecated_in,
                 removed_in, details
             )
-            #args[0].__warned__ = True
         return func(*args, **kwargs)
     return new
 
 
-class DeprecatedVariable:
+class DeprecatedVariable(object):
     def __new__(
         cls, obj, object_name, deprecated_in=None, removed_in=None,
         current_version=None, details=""
@@ -315,8 +313,6 @@ class DeprecatedVariable:
 
         TemporaryClass.__name__ = "Deprecated_%s" % obj.__class__.__name__
         output = TemporaryClass.__new__(TemporaryClass, obj)
-
-        #output.__warned__ = True
 
         wrappable_types = {type(int.__add__), type(zip), FunctionType}
         unwrappable_names = {
@@ -335,8 +331,6 @@ class DeprecatedVariable:
                 getattr(TemporaryClass, method_name), warning_class,
                 object_name, deprecated_in, removed_in, details
             ))
-
-        #output.__warned__ = False
 
         if warning_class:
             output.__doc__ = _wrap_docstring(
