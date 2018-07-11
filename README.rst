@@ -11,9 +11,10 @@ deprecation
 .. image:: https://codecov.io/gh/briancurtin/deprecation/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/briancurtin/deprecation
 
-The ``deprecation`` library provides a ``deprecated`` decorator and a
-``fail_if_not_removed`` decorator for your tests. Together, the two
-enable the automation of several things:
+The ``deprecation`` library provides a ``deprecated`` decorator,
+``DeprecatedVariable`` class, and a ``fail_if_not_removed`` decorator
+for your tests. Together, the three enable the automation of several
+things:
 
 1. The docstring of a deprecated method gets the deprecation details
    appended to the end of it. If you generate your API docs direct
@@ -49,6 +50,13 @@ Usage
     def foo():
         """Do some stuff"""
         return 1
+
+    MODULE_VARIABLE = deprecation.DeprecatedVariable(
+        deprecated_in="1.0",
+        removed_in="2.0",
+        current_version=__version__,
+        details="Use the VAR variable instead"
+    )
 
 ...but doesn't Python ignore ``DeprecationWarning``?
 ====================================================

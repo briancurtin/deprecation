@@ -16,6 +16,7 @@ import unittest2
 import warnings
 
 import deprecation
+import tests.export
 
 
 class Test_deprecated(unittest2.TestCase):
@@ -219,3 +220,123 @@ class Test_fail_if_not_removed(unittest2.TestCase):
     @deprecation.fail_if_not_removed
     def test_literal_DeprecatedWarning(self):
         self._deprecated_method()
+
+
+class Test_fail_if_variable_not_removed(unittest2.TestCase):
+    def test_UnsupportedWarning_causes_failure(self):
+        with self.assertRaises(AssertionError):
+            @deprecation.fail_if_not_removed
+            def fn():
+                self.assertNotEqual(
+                    getattr(tests.export, 'shows_unsupported'), ''
+                )
+
+            fn()
+
+    def test_DeprecatedWarning_doesnt_fail(self):
+        @deprecation.fail_if_not_removed
+        def fn():
+            self.assertNotEqual(
+                getattr(tests.export, 'shows_deprecated'), ''
+            )
+
+        try:
+            fn()
+        except AssertionError:
+            self.fail("A DeprecatedWarning shouldn't cause a failure")
+
+    @unittest2.expectedFailure
+    @deprecation.fail_if_not_removed
+    def test_literal_UnsupportedWarning(self):
+        self.assertNotEqual(
+            getattr(tests.export, 'shows_unsupported'), ''
+        )
+
+    @deprecation.fail_if_not_removed
+    def test_literal_DeprecatedWarning(self):
+        self.assertNotEqual(
+            getattr(tests.export, 'shows_deprecated'), ''
+        )
+
+
+class TestDeprecationVariable(unittest2.TestCase):
+    def test_removing_without_deprecating(self):
+        self.assertRaises(TypeError, deprecation.DeprecatedVariable,
+                          deprecated_in=None, removed_in="1.0")
+
+    def test_docstring(self):
+        for test in [{
+            "variable_name": "just_deprecated",
+            "__doc__": "\n\n.. deprecated::"
+        }, {
+            "variable_name": "shows_deprecated",
+            "__doc__": "\n\n.. deprecated:: 1.0"
+        },{
+            "variable_name": "removed_shows_deprecated",
+            "__doc__": "\n\n.. deprecated:: 1.0"
+                       "\n   This will be removed in 3.0."
+        }, {
+            "variable_name": "details_shows_unsupported",
+            "__doc__": "\n\n.. deprecated:: 1.0"
+                       "\n   This will be removed in 2.0. "
+                       "do something else."
+        }]:
+            with self.subTest(**test):
+                imported_variable = getattr(tests.export, test["variable_name"])
+                expected_docstring_tail = test["__doc__"]
+                found_docstring_tail = imported_variable.__doc__[
+                    -len(expected_docstring_tail):
+                ]
+
+                self.assertEqual(found_docstring_tail, expected_docstring_tail)
+
+    def test_warning_raised(self):
+        for test in [{
+            "variable_name": "just_deprecated",
+            "warning": deprecation.DeprecatedWarning,
+            "message": " is deprecated"
+        }, {
+            "variable_name": "details",
+            "warning": deprecation.DeprecatedWarning,
+            "message": " is deprecated. do something else."
+        }, {
+            "variable_name": "shows_deprecated",
+            "warning": deprecation.DeprecatedWarning,
+            "message": " is deprecated as of 1.0."
+        }, {
+            "variable_name": "removed_shows_deprecated",
+            "warning": deprecation.DeprecatedWarning,
+            "message": " is deprecated as of 1.0 and will be "
+                       "removed in 3.0."
+        }, {
+            "variable_name": "shows_unsupported",
+            "warning": deprecation.UnsupportedWarning,
+            "message": " is unsupported as of 2.0."
+        }, {
+            "variable_name": "details_shows_unsupported",
+            "warning": deprecation.UnsupportedWarning,
+            "message": " is unsupported as of 2.0. do something else."
+        }]:
+            with self.subTest(**test):
+                with warnings.catch_warnings(record=True) as caught_warnings:
+                    warnings.simplefilter("always")
+
+                    ret_val = getattr(tests.export, test['variable_name'])
+                    self.assertEqual(ret_val, test['variable_name'])
+
+                self.assertEqual(len(caught_warnings), 1)
+                self.assertEqual(caught_warnings[0].category, test["warning"])
+                self.assertEqual(
+                    str(caught_warnings[0].message),
+                    test['variable_name'] + test["message"]
+                )
+
+    def test_DeprecatedWarning_not_raised(self):
+        variable_name = 'no_warning'
+
+        with warnings.catch_warnings(record=True):
+            # If a warning is raised it'll be an exception, so we'll fail.
+            warnings.simplefilter("error")
+
+            ret_val = getattr(tests.export, variable_name)
+            self.assertEqual(ret_val, variable_name)

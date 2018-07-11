@@ -13,6 +13,7 @@ import collections
 import functools
 import textwrap
 import warnings
+from types import FunctionType
 
 from packaging import version
 
@@ -20,7 +21,7 @@ __version__ = "2.0.5"
 
 # This is mostly here so automodule docs are ordered more ideally.
 __all__ = ["deprecated", "message_location", "fail_if_not_removed",
-           "DeprecatedWarning", "UnsupportedWarning"]
+           "DeprecatedWarning", "UnsupportedWarning", "DeprecatedVariable"]
 
 #: Location where the details are added to a deprecated docstring
 #:
@@ -99,6 +100,101 @@ class UnsupportedWarning(DeprecatedWarning):
                 "%(details)s" % (parts))
 
 
+def _get_warning_class(deprecated_in, removed_in, current_version):
+    # You can't just jump to removal. It's weird, unfair, and also makes
+    # building up the docstring weird.
+    if deprecated_in is None and removed_in is not None:
+        raise TypeError("Cannot set removed_in to a value "
+                        "without also setting deprecated_in")
+
+    warning_class = None
+
+    # StrictVersion won't take a None or a "", so make whatever goes to it
+    # is at least *something*.
+    if current_version:
+        current_version = version.parse(current_version)
+
+        if (removed_in
+                and current_version >= version.parse(removed_in)):
+            warning_class = UnsupportedWarning
+        elif (deprecated_in
+              and current_version >= version.parse(deprecated_in)):
+            warning_class = DeprecatedWarning
+    else:
+        # If we can't actually calculate that we're in a period of
+        # deprecation...well, they used the decorator, so it's deprecated.
+        # This will cover the case of someone just using
+        # @deprecated("1.0") without the other advantages.
+        warning_class = DeprecatedWarning
+
+    return warning_class
+
+
+def _warn_user(warning_class, object_name, deprecated_in, removed_in, details):
+    the_warning = warning_class(
+        object_name, deprecated_in, removed_in, details
+    )
+    warnings.warn(the_warning, category=DeprecationWarning, stacklevel=2)
+
+
+def _wrap_docstring(docstring, deprecated_in, removed_in, details):
+    # Everything *should* have a docstring, but just in case...
+    existing_docstring = docstring or ""
+
+    # The various parts of this decorator being optional makes for
+    # a number of ways the deprecation notice could go. The following
+    # makes for a nicely constructed sentence with or without any
+    # of the parts.
+    parts = {
+        "deprecated_in":
+            " %s" % deprecated_in if deprecated_in else "",
+        "removed_in":
+            "\n   This will be removed in %s." %
+            removed_in if removed_in else "",
+        "details":
+            " %s" % details if details else ""
+    }
+
+    deprecation_note = (".. deprecated::{deprecated_in}"
+                        "{removed_in}{details}".format(**parts))
+
+    # default location for insertion of deprecation note
+    loc = 1
+
+    # split docstring at first occurrence of newline
+    string_list = existing_docstring.split("\n", 1)
+
+    if len(string_list) > 1:
+        # With a multi-line docstring, when we modify
+        # existing_docstring to add our deprecation_note,
+        # if we're not careful we'll interfere with the
+        # indentation levels of the contents below the
+        # first line, or as PEP 257 calls it, the summary
+        # line. Since the summary line can start on the
+        # same line as the """, dedenting the whole thing
+        # won't help. Split the summary and contents up,
+        # dedent the contents independently, then join
+        # summary, dedent'ed contents, and our
+        # deprecation_note.
+
+        # in-place dedent docstring content
+        string_list[1] = textwrap.dedent(string_list[1])
+
+        # we need another newline
+        string_list.insert(loc, "\n")
+
+        # change the message_location if we add to end of docstring
+        # do this always if not "top"
+        if message_location != "top":
+            loc = 3
+
+    # insert deprecation note and dual newline
+    string_list.insert(loc, deprecation_note)
+    string_list.insert(loc, "\n\n")
+
+    return "".join(string_list)
+
+
 def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                details=""):
     """Decorate a function to signify its deprecation
@@ -140,108 +236,24 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                     a replacement method, such as "Use the foo_bar
                     method instead". By default there are no details.
     """
-    # You can't just jump to removal. It's weird, unfair, and also makes
-    # building up the docstring weird.
-    if deprecated_in is None and removed_in is not None:
-        raise TypeError("Cannot set removed_in to a value "
-                        "without also setting deprecated_in")
-
     # Only warn when it's appropriate. There may be cases when it makes sense
     # to add this decorator before a formal deprecation period begins.
     # In CPython, PendingDeprecatedWarning gets used in that period,
     # so perhaps mimick that at some point.
-    is_deprecated = False
-    is_unsupported = False
 
-    # StrictVersion won't take a None or a "", so make whatever goes to it
-    # is at least *something*.
-    if current_version:
-        current_version = version.parse(current_version)
-
-        if (removed_in
-                and current_version >= version.parse(removed_in)):
-            is_unsupported = True
-        elif (deprecated_in
-              and current_version >= version.parse(deprecated_in)):
-            is_deprecated = True
-    else:
-        # If we can't actually calculate that we're in a period of
-        # deprecation...well, they used the decorator, so it's deprecated.
-        # This will cover the case of someone just using
-        # @deprecated("1.0") without the other advantages.
-        is_deprecated = True
-
-    should_warn = any([is_deprecated, is_unsupported])
+    warning_class = _get_warning_class(deprecated_in, removed_in, current_version)
 
     def _function_wrapper(function):
-        if should_warn:
-            # Everything *should* have a docstring, but just in case...
-            existing_docstring = function.__doc__ or ""
-
-            # The various parts of this decorator being optional makes for
-            # a number of ways the deprecation notice could go. The following
-            # makes for a nicely constructed sentence with or without any
-            # of the parts.
-            parts = {
-                "deprecated_in":
-                    " %s" % deprecated_in if deprecated_in else "",
-                "removed_in":
-                    "\n   This will be removed in %s." %
-                    removed_in if removed_in else "",
-                "details":
-                    " %s" % details if details else ""}
-
-            deprecation_note = (".. deprecated::{deprecated_in}"
-                                "{removed_in}{details}".format(**parts))
-
-            # default location for insertion of deprecation note
-            loc = 1
-
-            # split docstring at first occurrence of newline
-            string_list = existing_docstring.split("\n", 1)
-
-            if len(string_list) > 1:
-                # With a multi-line docstring, when we modify
-                # existing_docstring to add our deprecation_note,
-                # if we're not careful we'll interfere with the
-                # indentation levels of the contents below the
-                # first line, or as PEP 257 calls it, the summary
-                # line. Since the summary line can start on the
-                # same line as the """, dedenting the whole thing
-                # won't help. Split the summary and contents up,
-                # dedent the contents independently, then join
-                # summary, dedent'ed contents, and our
-                # deprecation_note.
-
-                # in-place dedent docstring content
-                string_list[1] = textwrap.dedent(string_list[1])
-
-                # we need another newline
-                string_list.insert(loc, "\n")
-
-                # change the message_location if we add to end of docstring
-                # do this always if not "top"
-                if message_location != "top":
-                    loc = 3
-
-            # insert deprecation note and dual newline
-            string_list.insert(loc, deprecation_note)
-            string_list.insert(loc, "\n\n")
-
-            function.__doc__ = "".join(string_list)
+        if warning_class:
+            function.__doc__ = _wrap_docstring(
+                function.__doc__, deprecated_in, removed_in, details
+            )
 
         @functools.wraps(function)
         def _inner(*args, **kwargs):
-            if should_warn:
-                if is_unsupported:
-                    cls = UnsupportedWarning
-                else:
-                    cls = DeprecatedWarning
-
-                the_warning = cls(function.__name__, deprecated_in,
-                                  removed_in, details)
-                warnings.warn(the_warning, category=DeprecationWarning,
-                              stacklevel=2)
+            if warning_class:
+                _warn_user(warning_class, function.__name__,
+                           deprecated_in, removed_in, details)
 
             return function(*args, **kwargs)
         return _inner
@@ -273,3 +285,62 @@ def fail_if_not_removed(method):
                      (method, str(warning.message))))
         return rv
     return test_inner
+
+
+def _deprecated_wrapper(func, warning_class, object_name, deprecated_in,
+                        removed_in, details):
+    def new(*args, **kwargs):
+        #if not args[0].__warned__:
+        if warning_class:
+            _warn_user(
+                warning_class, object_name, deprecated_in,
+                removed_in, details
+            )
+            #args[0].__warned__ = True
+        return func(*args, **kwargs)
+    return new
+
+
+class DeprecatedVariable:
+    def __new__(
+        cls, obj, object_name, deprecated_in=None, removed_in=None,
+        current_version=None, details=""
+    ):
+        warning_class = _get_warning_class(
+            deprecated_in, removed_in, current_version
+        )
+
+        class TemporaryClass(obj.__class__):
+            pass
+
+        TemporaryClass.__name__ = "Deprecated_%s" % obj.__class__.__name__
+        output = TemporaryClass.__new__(TemporaryClass, obj)
+
+        #output.__warned__ = True
+
+        wrappable_types = {type(int.__add__), type(zip), FunctionType}
+        unwrappable_names = {
+            "__str__", "__unicode__", "__repr__", "__getattribute__",
+            "__setattr__", "__class__"
+        }
+
+        for method_name in dir(TemporaryClass):
+            if not type(getattr(TemporaryClass, method_name)) in wrappable_types:
+                continue
+
+            if method_name in unwrappable_names:
+                continue
+
+            setattr(TemporaryClass, method_name, _deprecated_wrapper(
+                getattr(TemporaryClass, method_name), warning_class,
+                object_name, deprecated_in, removed_in, details
+            ))
+
+        #output.__warned__ = False
+
+        if warning_class:
+            output.__doc__ = _wrap_docstring(
+                obj.__doc__, deprecated_in, removed_in, details
+            )
+
+        return output
