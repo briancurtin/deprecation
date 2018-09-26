@@ -20,6 +20,11 @@ import deprecation
 
 class Test_deprecated(unittest2.TestCase):
 
+    def test_args_set_on_base_class(self):
+        args = (1, 2, 3, 4)
+        dw = deprecation.DeprecatedWarning(*args)
+        self.assertEqual(dw.args, args)
+
     def test_removing_without_deprecating(self):
         self.assertRaises(TypeError, deprecation.deprecated,
                           deprecated_in=None, removed_in="1.0")
