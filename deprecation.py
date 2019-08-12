@@ -16,7 +16,7 @@ import warnings
 
 from packaging import version
 
-__version__ = "2.0.6"
+__version__ = "2.0.7"
 
 # This is mostly here so automodule docs are ordered more ideally.
 __all__ = ["deprecated", "message_location", "fail_if_not_removed",
