@@ -1,5 +1,5 @@
 codecov>=2.0
 coverage>=4.3
 flake8>=3.2
-packaging>=16.8
+packaging>=16.8,<=19.2
 unittest2>=1.1
