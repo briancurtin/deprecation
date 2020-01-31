@@ -43,7 +43,8 @@ class DeprecatedWarning(DeprecationWarning):
 
     :param function: The function being deprecated.
     :param deprecated_in: The version that ``function`` is deprecated in
-    :param removed_in: The version or date that ``function`` gets removed in
+    :param removed_in: "The version that function gets removed in, or
+                        the datetime.date it gets removed on"
     :param details: Optional details about the deprecation. Most often
                     this will include directions on what to use instead
                     of the now deprecated code.
@@ -69,10 +70,8 @@ class DeprecatedWarning(DeprecationWarning):
         if self.deprecated_in:
             parts["deprecated"] = " as of %s" % self.deprecated_in
         if self.removed_in:
-            if isinstance(self.removed_in, date):
-                parts["removed"] = " and will be removed on %s" % self.removed_in
-            else:
-                parts["removed"] = " and will be removed in %s" % self.removed_in
+            parts["removed"] = " and will be removed {} {}".format("on" if isinstance(self.removed_in, date) else "in",
+                                                                   self.removed_in)
         if any([self.deprecated_in, self.removed_in, self.details]):
             parts["period"] = "."
         if self.details:
@@ -84,6 +83,7 @@ class DeprecatedWarning(DeprecationWarning):
 
 class UnsupportedWarning(DeprecatedWarning):
     """A warning class for methods to be removed
+
     This is a subclass of :class:`~deprecation.DeprecatedWarning` and is used
     to output a proper message about a function being unsupported.
     Additionally, the :func:`~deprecation.fail_if_not_removed` decorator
@@ -124,10 +124,9 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                           means immediate deprecation. If this is not
                           specified, then the `removed_in` and
                           `current_version` arguments are ignored.
-    :param removed_in: The version or date when the decorated method will be
-                       removed. The default is **None**, specifying that
-                       the function is not currently planned to be removed.
-                       The date input is of type datetime.date
+    :param removed_in: The version or datetime.date when the decorated method
+                       will be removed. The default is **None**, specifying
+                       that the function is not currently planned to be removed.
                        Note: This parameter cannot be set to a value if
                        `deprecated_in=None`.
     :param current_version: The source of version information for the
@@ -161,7 +160,12 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
     # StrictVersion won't take a None or a "", so make whatever goes to it
     # is at least *something*. Compare versions only if removed_in is not
     # of type datetime.date
-    if current_version and not isinstance(removed_in, date):
+    if isinstance(removed_in, date):
+        if date.today() >= removed_in:
+            is_unsupported = True
+        else:
+            is_deprecated = True
+    elif current_version and not isinstance(removed_in, date):
         current_version = version.parse(current_version)
 
         if (removed_in
@@ -169,11 +173,6 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             is_unsupported = True
         elif (deprecated_in
               and current_version >= version.parse(deprecated_in)):
-            is_deprecated = True
-    elif isinstance(removed_in, date):
-        if date.today() >= removed_in:
-            is_unsupported = True
-        else:
             is_deprecated = True
     else:
         # If we can't actually calculate that we're in a period of
@@ -193,26 +192,17 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             # a number of ways the deprecation notice could go. The following
             # makes for a nicely constructed sentence with or without any
             # of the parts.
-            if isinstance(removed_in, date):
-                # If removed_in is a date, use "removed on"
-                parts = {
-                    "deprecated_in":
-                        " %s" % deprecated_in if deprecated_in else "",
-                    "removed_in":
-                        "\n   This will be removed on %s." %
-                        removed_in if removed_in else "",
-                    "details":
-                        " %s" % details if details else ""}
-            else:
-                # If removed_in is a version, use "removed in"
-                parts = {
-                    "deprecated_in":
-                        " %s" % deprecated_in if deprecated_in else "",
-                    "removed_in":
-                        "\n   This will be removed in %s." %
-                        removed_in if removed_in else "",
-                    "details":
-                        " %s" % details if details else ""}
+
+            # If removed_in is a date, use "removed on"
+            # If removed_in is a version, use "removed in"
+            parts = {
+                "deprecated_in":
+                    " %s" % deprecated_in if deprecated_in else "",
+                "removed_in":
+                    "\n   This will be removed {} {}.".format("on" if isinstance(removed_in, date) else "in",
+                                                              removed_in) if removed_in else "",
+                "details":
+                    " %s" % details if details else ""}
 
             deprecation_note = (".. deprecated::{deprecated_in}"
                                 "{removed_in}{details}".format(**parts))
@@ -267,9 +257,7 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                               stacklevel=2)
 
             return function(*args, **kwargs)
-
         return _inner
-
     return _function_wrapper
 
 
@@ -284,7 +272,6 @@ def fail_if_not_removed(method):
              :class:`~deprecation.UnsupportedWarning`
              is raised while running the test method.
     """
-
     # NOTE(briancurtin): Unless this is named test_inner, nose won't work
     # properly. See Issue #32.
     def test_inner(*args, **kwargs):
@@ -298,5 +285,4 @@ def fail_if_not_removed(method):
                     ("%s uses a function that should be removed: %s" %
                      (method, str(warning.message))))
         return rv
-
     return test_inner
