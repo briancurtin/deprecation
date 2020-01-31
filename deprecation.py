@@ -31,7 +31,6 @@ __all__ = ["deprecated", "message_location", "fail_if_not_removed",
 message_location = "bottom"
 
 
-# TODO Add date for DeprecatedWarning
 class DeprecatedWarning(DeprecationWarning):
     """A warning class for deprecated methods
 
@@ -125,7 +124,6 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                           means immediate deprecation. If this is not
                           specified, then the `removed_in` and
                           `current_version` arguments are ignored.
-    TODO: Add Documentation on date input for removed_in DONE
     :param removed_in: The version or date when the decorated method will be
                        removed. The default is **None**, specifying that
                        the function is not currently planned to be removed.
