@@ -16,6 +16,7 @@ import unittest2
 import warnings
 
 import deprecation
+from datetime import date
 
 
 class Test_deprecated(unittest2.TestCase):
@@ -41,6 +42,14 @@ class Test_deprecated(unittest2.TestCase):
                                "details": "some details"},
                       "__doc__": "docstring\n\n.. deprecated:: 1.0"
                                  "\n   This will be removed in 2.0. "
+                                 "some details"},
+                     {"args": {"deprecated_in": "1.0", "removed_in": date(2200, 5, 20)},
+                      "__doc__": "docstring\n\n.. deprecated:: 1.0"
+                                 "\n   This will be removed on 2200-05-20."},
+                     {"args": {"deprecated_in": "1.0", "removed_in": date(2100, 3, 15),
+                               "details": "some details"},
+                      "__doc__": "docstring\n\n.. deprecated:: 1.0"
+                                 "\n   This will be removed on 2100-03-15. "
                                  "some details"}]:
             with self.subTest(**test):
                 @deprecation.deprecated(**test["args"])
@@ -62,6 +71,14 @@ class Test_deprecated(unittest2.TestCase):
                                "details": "some details"},
                       "__doc__": "%s\n\n.. deprecated:: 1.0"
                                  "\n   This will be removed in 2.0. "
+                                 "some details"},
+                     {"args": {"deprecated_in": "1.0", "removed_in": date(2200, 11, 20)},
+                      "__doc__": "%s\n\n.. deprecated:: 1.0"
+                                 "\n   This will be removed on 2200-11-20."},
+                     {"args": {"deprecated_in": "1.0", "removed_in": date(2100, 3, 15),
+                               "details": "some details"},
+                      "__doc__": "%s\n\n.. deprecated:: 1.0"
+                                 "\n   This will be removed on 2100-03-15. "
                                  "some details"}]:
             with self.subTest(**test):
                 @deprecation.deprecated(**test["args"])
@@ -88,6 +105,14 @@ class Test_deprecated(unittest2.TestCase):
                                "details": "some details"},
                       "__doc__": "%s\n\n.. deprecated:: 1.0"
                                  "\n   This will be removed in 2.0. "
+                                 "some details%s"},#####
+                     {"args": {"deprecated_in": "1.0", "removed_in": date(2200, 11, 20)},
+                      "__doc__": "%s\n\n.. deprecated:: 1.0"
+                                 "\n   This will be removed on 2200-11-20.%s"},
+                     {"args": {"deprecated_in": "1.0", "removed_in": date(2100, 3, 15),
+                               "details": "some details"},
+                      "__doc__": "%s\n\n.. deprecated:: 1.0"
+                                 "\n   This will be removed on 2100-03-15. "
                                  "some details%s"}]:
             with self.subTest(**test):
                 deprecation.message_location = "top"
@@ -150,6 +175,24 @@ class Test_deprecated(unittest2.TestCase):
                                "details": "do something else."},
                       "warning": deprecation.UnsupportedWarning,
                       "message": ("method is unsupported as of 2.0. "
+                                  "do something else.")},
+                     {"args": {"deprecated_in": "1.0",
+                               "removed_in": date(2100, 4, 19),
+                               "current_version": "2.0"},
+                      "warning": deprecation.DeprecatedWarning,
+                      "message": ("method is deprecated as of 1.0 "
+                                  "and will be removed on 2100-04-19.")},
+                     {"args": {"deprecated_in": "1.0",
+                               "removed_in": date.today(),
+                               "current_version": "2.0"},
+                      "warning": deprecation.UnsupportedWarning,
+                      "message": "method is unsupported as of %s." % date.today()},
+                     {"args": {"deprecated_in": "1.0",
+                               "removed_in": date(2020, 1, 30),
+                               "current_version": "2.0",
+                               "details": "do something else."},
+                      "warning": deprecation.UnsupportedWarning,
+                      "message": ("method is unsupported as of 2020-01-30. "
                                   "do something else.")}]:
             with self.subTest(**test):
                 class Test(object):
