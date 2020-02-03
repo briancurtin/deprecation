@@ -165,7 +165,7 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             is_unsupported = True
         else:
             is_deprecated = True
-    elif current_version and not isinstance(removed_in, date):
+    elif current_version:
         current_version = version.parse(current_version)
 
         if (removed_in
