@@ -15,6 +15,7 @@ import textwrap
 import warnings
 
 from packaging import version
+from datetime import date
 
 __version__ = "2.0.7"
 
@@ -42,7 +43,8 @@ class DeprecatedWarning(DeprecationWarning):
 
     :param function: The function being deprecated.
     :param deprecated_in: The version that ``function`` is deprecated in
-    :param removed_in: The version that ``function`` gets removed in
+    :param removed_in: The version or :class:`datetime.date` specifying
+                       when ``function`` gets removed.
     :param details: Optional details about the deprecation. Most often
                     this will include directions on what to use instead
                     of the now deprecated code.
@@ -68,7 +70,8 @@ class DeprecatedWarning(DeprecationWarning):
         if self.deprecated_in:
             parts["deprecated"] = " as of %s" % self.deprecated_in
         if self.removed_in:
-            parts["removed"] = " and will be removed in %s" % self.removed_in
+            parts["removed"] = " and will be removed {} {}".format("on" if isinstance(self.removed_in, date) else "in",
+                                                                   self.removed_in)
         if any([self.deprecated_in, self.removed_in, self.details]):
             parts["period"] = "."
         if self.details:
@@ -121,10 +124,11 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                           means immediate deprecation. If this is not
                           specified, then the `removed_in` and
                           `current_version` arguments are ignored.
-    :param removed_in: The version when the decorated method will be removed.
-                       The default is **None**, specifying that the function
-                       is not currently planned to be removed.
-                       Note: This cannot be set to a value if
+    :param removed_in: The version or :class:`datetime.date` when the decorated
+                       method will be removed. The default is **None**,
+                       specifying that the function is not currently planned
+                       to be removed.
+                       Note: This parameter cannot be set to a value if
                        `deprecated_in=None`.
     :param current_version: The source of version information for the
                             currently running code. This will usually be
@@ -155,8 +159,14 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
     is_unsupported = False
 
     # StrictVersion won't take a None or a "", so make whatever goes to it
-    # is at least *something*.
-    if current_version:
+    # is at least *something*. Compare versions only if removed_in is not
+    # of type datetime.date
+    if isinstance(removed_in, date):
+        if date.today() >= removed_in:
+            is_unsupported = True
+        else:
+            is_deprecated = True
+    elif current_version:
         current_version = version.parse(current_version)
 
         if (removed_in
@@ -183,12 +193,15 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             # a number of ways the deprecation notice could go. The following
             # makes for a nicely constructed sentence with or without any
             # of the parts.
+
+            # If removed_in is a date, use "removed on"
+            # If removed_in is a version, use "removed in"
             parts = {
                 "deprecated_in":
                     " %s" % deprecated_in if deprecated_in else "",
                 "removed_in":
-                    "\n   This will be removed in %s." %
-                    removed_in if removed_in else "",
+                    "\n   This will be removed {} {}.".format("on" if isinstance(removed_in, date) else "in",
+                                                              removed_in) if removed_in else "",
                 "details":
                     " %s" % details if details else ""}
 
