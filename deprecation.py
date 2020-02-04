@@ -43,8 +43,8 @@ class DeprecatedWarning(DeprecationWarning):
 
     :param function: The function being deprecated.
     :param deprecated_in: The version that ``function`` is deprecated in
-    :param removed_in: "The version that function gets removed in, or
-                        the datetime.date it gets removed on"
+    :param removed_in: The version or :class:`datetime.date` specifying
+                       when ``function`` gets removed.
     :param details: Optional details about the deprecation. Most often
                     this will include directions on what to use instead
                     of the now deprecated code.
@@ -124,9 +124,10 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                           means immediate deprecation. If this is not
                           specified, then the `removed_in` and
                           `current_version` arguments are ignored.
-    :param removed_in: The version or datetime.date when the decorated method
-                       will be removed. The default is **None**, specifying
-                       that the function is not currently planned to be removed.
+    :param removed_in: The version or :class:`datetime.date` when the decorated
+                       method will be removed. The default is **None**,
+                       specifying that the function is not currently planned
+                       to be removed.
                        Note: This parameter cannot be set to a value if
                        `deprecated_in=None`.
     :param current_version: The source of version information for the
