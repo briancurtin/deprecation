@@ -275,6 +275,7 @@ def fail_if_not_removed(method):
     """
     # NOTE(briancurtin): Unless this is named test_inner, nose won't work
     # properly. See Issue #32.
+    @functools.wraps(method)
     def test_inner(*args, **kwargs):
         with warnings.catch_warnings(record=True) as caught_warnings:
             warnings.simplefilter("always")
