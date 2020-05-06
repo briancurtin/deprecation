@@ -17,7 +17,7 @@ import warnings
 from packaging import version
 from datetime import date
 
-__version__ = "2.0.7"
+__version__ = "2.1.0"
 
 # This is mostly here so automodule docs are ordered more ideally.
 __all__ = ["deprecated", "message_location", "fail_if_not_removed",
