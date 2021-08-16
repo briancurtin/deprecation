@@ -44,10 +44,12 @@ To mark a function or method as deprecated, wrap it in the
  ::
 
     import deprecation
+    
+    __version__ = "1.5"
 
     @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
                             current_version=__version__,
-                            details="Use the bar function instead")
+                            details="Use the bar function instead.")
     def foo():
         """Do some stuff"""
         return 1
@@ -65,7 +67,8 @@ instead. For example, run ``help(foo)`` and this is what you'll get:
     foo()
         Do some stuff
 
-        *Deprecated in 1.0, to be removed in 2.0. Use the bar function instead*
+        .. deprecated:: 1.0
+           This will be removed in 2.0. Use the bar function instead.
 
 You can pass varying amounts of detail to this decorator, but note that
 in most cases it removes the ability to use
