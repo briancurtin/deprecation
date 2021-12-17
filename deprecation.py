@@ -154,7 +154,7 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
     # Only warn when it's appropriate. There may be cases when it makes sense
     # to add this decorator before a formal deprecation period begins.
     # In CPython, PendingDeprecatedWarning gets used in that period,
-    # so perhaps mimick that at some point.
+    # so perhaps mimic that at some point.
     is_deprecated = False
     is_unsupported = False
 
