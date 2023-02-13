@@ -12,7 +12,12 @@
 
 # As we unfortunately support Python 2.7, it lacks TestCase.subTest which
 # is in 3.4+ or in unittest2
-import unittest2
+try:
+    import unittest2
+except ImportError:
+    import unittest
+    unittest2 = unittest
+
 import warnings
 
 import deprecation
