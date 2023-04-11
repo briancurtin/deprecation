@@ -8,7 +8,7 @@ EMAIL = "brian@python.org"
 
 
 def _read_file():
-    with open("deprecation.py", "r") as f:
+    with open("deprecation/__init__.py", "r") as f:
         return f.read()
 
 
@@ -34,7 +34,7 @@ setup(name="deprecation",
       install_requires=["packaging"],
       keywords=["deprecation"],
       long_description=io.open("README.rst", encoding="utf-8").read(),
-      py_modules=["deprecation"],
+      packages=["deprecation"],
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "License :: OSI Approved :: Apache Software License",
@@ -56,6 +56,6 @@ setup(name="deprecation",
           "Source": "https://github.com/briancurtin/deprecation",
           "Bug Tracker": "https://github.com/briancurtin/deprecation/issues"},
       package_data = {
-          "deprecation": ["py.typed", "deprecation.pyi"],
+          "deprecation": ["py.typed", "__init__.pyi"],
       },
       )
