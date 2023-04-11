@@ -55,4 +55,7 @@ setup(name="deprecation",
           "Documentation": "http://deprecation.readthedocs.io/en/latest/",
           "Source": "https://github.com/briancurtin/deprecation",
           "Bug Tracker": "https://github.com/briancurtin/deprecation/issues"},
+      package_data = {
+          "deprecation": ["py.typed", "deprecation.pyi"],
+      },
       )
