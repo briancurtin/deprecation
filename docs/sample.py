@@ -1,4 +1,4 @@
-import unittest2
+import unittest
 
 import deprecation
 
@@ -7,7 +7,7 @@ __version__ = "1.5"
 
 @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
                         current_version=__version__,
-                        details="Use the ``one`` function instead")
+                        details="Use the :func:`one` function instead")
 def won():
     """This function returns 1"""
     # Oops, it's one, not won. Let's deprecate this and get it right.
@@ -16,32 +16,40 @@ def won():
 
 @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
                         current_version=__version__,
-                        details="Use the ``multiline_one`` function instead.")
+                        details="Use the :func:`multiline_one` function instead.")
 def multiline_bottom():
     """This function returns 1.
 
     Multiline Bottom. Deprecation Note is inserted at the bottom.
 
-    This is also here to show that multiline docstrings work
+    This is also here to show that multiline docstrings work.
     """
     return 1
 
 
 @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
                         current_version=__version__,
-                        details="Use the ``one`` function instead")
+                        details="Use the :func:`one` function instead")
 def uno():
-    """Esta función regresa 1
+    """Esta función regresa 1.
 
-    This is Spanish for 'This function returns 1'
+    This is Spanish for 'This function returns 1'.
 
-    This is also here to show that multiline docstrings work
+    This is also here to show that multiline docstrings work.
     """
     return 1
 
 
 def one():
     """This function returns 1"""
+    return 1
+
+
+def multiline_one():
+    """This function has a multiline docstring, and returns 1.
+
+    This is also here to show that multiline docstrings work.
+    """
     return 1
 
 
@@ -65,12 +73,12 @@ def multiline_top():
     Multiline Top. Deprecation Note is inserted above this line. This is done
     via setting ``deprecation.message_location`` to 'top'.
 
-    This is also here to show that multiline docstrings work
+    This is also here to show that multiline docstrings work.
     """
     return 1
 
 
-class Tests(unittest2.TestCase):
+class Tests(unittest.TestCase):
 
     @deprecation.fail_if_not_removed
     def test_won(self):
