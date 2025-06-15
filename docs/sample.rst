@@ -8,3 +8,4 @@ looks like when :func:`~deprecation.deprecated` has modified it.
 
 .. automodule:: sample
    :members:
+   :undoc-members:

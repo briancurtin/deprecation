@@ -10,16 +10,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# As we unfortunately support Python 2.7, it lacks TestCase.subTest which
-# is in 3.4+ or in unittest2
-import unittest2
+import sys
 import warnings
 
 import deprecation
 from datetime import date
 
+# As we unfortunately support Python 2.7, it lacks TestCase.subTest which
+# is in 3.4+ or in unittest2
+if sys.version_info < (3, 4):
+    import unittest2 as unittest
+else:
+    import unittest
 
-class Test_deprecated(unittest2.TestCase):
+
+class Test_deprecated(unittest.TestCase):
 
     def test_args_set_on_base_class(self):
         args = (1, 2, 3, 4)
@@ -230,7 +235,7 @@ class Test_deprecated(unittest2.TestCase):
             self.assertEqual(sot.method(), ret_val)
 
 
-class Test_fail_if_not_removed(unittest2.TestCase):
+class Test_fail_if_not_removed(unittest.TestCase):
 
     @deprecation.deprecated(deprecated_in="1.0", current_version="2.0")
     def _deprecated_method(self):
@@ -259,7 +264,7 @@ class Test_fail_if_not_removed(unittest2.TestCase):
         except AssertionError:
             self.fail("A DeprecatedWarning shouldn't cause a failure")
 
-    @unittest2.expectedFailure
+    @unittest.expectedFailure
     @deprecation.fail_if_not_removed
     def test_literal_UnsupportedWarning(self):
         self._unsupported_method()
