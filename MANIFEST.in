@@ -1,3 +1,4 @@
 include LICENSE
+include tox.ini test-requirements.txt
 include tests/*.py
 graft docs
