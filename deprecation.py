@@ -242,7 +242,12 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
             string_list.insert(loc, deprecation_note)
             string_list.insert(loc, "\n\n")
 
-            function.__doc__ = "".join(string_list)
+            updated_docstring = "".join(string_list)
+            try:
+                function.__doc__ = updated_docstring
+            except (AttributeError, TypeError):
+                # Native functions and immutable types can have read-only docs.
+                pass
 
         @functools.wraps(function)
         def _inner(*args, **kwargs):
@@ -258,6 +263,9 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
                               stacklevel=2)
 
             return function(*args, **kwargs)
+
+        if should_warn:
+            _inner.__doc__ = updated_docstring
         return _inner
     return _function_wrapper
 
