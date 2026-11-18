@@ -58,6 +58,21 @@ class Test_deprecated(unittest2.TestCase):
 
                 self.assertEqual(fn.__doc__, test["__doc__"])
 
+    def test_read_only_builtin_docstrings(self):
+        for function, argument, expected in ((len, "abc", 3), (int, "7", 7)):
+            with self.subTest(function=function):
+                original_doc = function.__doc__
+                wrapped = deprecation.deprecated(deprecated_in="1.0")(function)
+                self.assertEqual(wrapped.__name__, function.__name__)
+                self.assertIn(".. deprecated:: 1.0", wrapped.__doc__)
+                self.assertEqual(function.__doc__, original_doc)
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    self.assertEqual(wrapped(argument), expected)
+                self.assertEqual(len(caught), 1)
+                self.assertEqual(caught[0].category,
+                                 deprecation.DeprecatedWarning)
+
     def test_multiline_docstring(self):
         docstring = "summary line\n\ndetails\nand more details\n"
         for test in [{"args": {},
