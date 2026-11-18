@@ -10,7 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import collections
+import contextlib
 import functools
+import inspect
 import textwrap
 import warnings
 
@@ -262,6 +264,60 @@ def deprecated(deprecated_in=None, removed_in=None, current_version=None,
     return _function_wrapper
 
 
+@contextlib.contextmanager
+def _check_removal(method):
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        yield
+    for warning in caught:
+        if warning.category == UnsupportedWarning:
+            raise AssertionError("%s uses a function that should be removed: %s"
+                                 % (method, warning.message))
+
+
+class _WarningScope(object):
+    """Restore the coroutine's warning filters and recorder between steps."""
+
+    def __init__(self, coroutine):
+        self.iterator = coroutine.__await__()
+        self.suspended = None
+
+    def __await__(self):
+        return self
+
+    __iter__ = __await__
+
+    def __next__(self):
+        return self.send(None)
+
+    def send(self, value):
+        return self._resume(self.iterator.send, value)
+
+    def throw(self, *exc):
+        return self._resume(self.iterator.throw, *exc)
+
+    @contextlib.contextmanager
+    def _running(self):
+        with warnings.catch_warnings():
+            if self.suspended is not None:
+                self.suspended.__exit__(None, None, None)
+                self.suspended = None
+            yield
+
+    def _resume(self, resume, *args):
+        with self._running():
+            value = resume(*args)
+            # Snapshot even a nested catch_warnings opened by the test. The
+            # caller's filters are restored as soon as the coroutine yields.
+            self.suspended = warnings.catch_warnings()
+            self.suspended.__enter__()
+            return value
+
+    def close(self):
+        with self._running():
+            return self.iterator.close()
+
+
 def fail_if_not_removed(method):
     """Decorate a test method to track removal of deprecated code
 
@@ -273,18 +329,23 @@ def fail_if_not_removed(method):
              :class:`~deprecation.UnsupportedWarning`
              is raised while running the test method.
     """
+    # Keep this single-file module importable on Python 2.7, where native
+    # coroutine syntax cannot be parsed.
+    if (hasattr(inspect, "iscoroutinefunction")
+            and inspect.iscoroutinefunction(method)):
+        namespace = {"method": method, "check": _check_removal,
+                     "isolate": _WarningScope}
+        exec("async def test_inner(*args, **kwargs):\n"
+             "    async def run():\n"
+             "        with check(method):\n"
+             "            return await method(*args, **kwargs)\n"
+             "    return await isolate(run())", namespace)
+        return functools.wraps(method)(namespace["test_inner"])
+
     # NOTE(briancurtin): Unless this is named test_inner, nose won't work
     # properly. See Issue #32.
     @functools.wraps(method)
     def test_inner(*args, **kwargs):
-        with warnings.catch_warnings(record=True) as caught_warnings:
-            warnings.simplefilter("always")
-            rv = method(*args, **kwargs)
-
-        for warning in caught_warnings:
-            if warning.category == UnsupportedWarning:
-                raise AssertionError(
-                    ("%s uses a function that should be removed: %s" %
-                     (method, str(warning.message))))
-        return rv
+        with _check_removal(method):
+            return method(*args, **kwargs)
     return test_inner

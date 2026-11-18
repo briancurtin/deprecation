@@ -12,6 +12,7 @@
 
 # As we unfortunately support Python 2.7, it lacks TestCase.subTest which
 # is in 3.4+ or in unittest2
+import inspect
 import unittest2
 import warnings
 
@@ -267,3 +268,39 @@ class Test_fail_if_not_removed(unittest2.TestCase):
     @deprecation.fail_if_not_removed
     def test_literal_DeprecatedWarning(self):
         self._deprecated_method()
+
+
+@unittest2.skipUnless(hasattr(inspect, "iscoroutinefunction"),
+                      "requires native coroutines")
+class Test_async_fail_if_not_removed(unittest2.TestCase):
+
+    def setUp(self):
+        import asyncio
+        from tests.async_fixtures import async_test
+
+        self.loop = asyncio.new_event_loop()
+        self.addCleanup(self.loop.close)
+        self.wrapped = deprecation.fail_if_not_removed(async_test)
+
+    def test_preserves_coroutine_function(self):
+        self.assertTrue(inspect.iscoroutinefunction(self.wrapped))
+        self.assertEqual(self.wrapped.__name__, "async_test")
+        self.assertEqual(self.loop.run_until_complete(self.wrapped(42)), 42)
+
+    def test_unsupported_warning_after_await(self):
+        with self.assertRaises(AssertionError):
+            self.loop.run_until_complete(self.wrapped(42, warn=True))
+
+    def test_concurrent_warnings_stay_with_their_test(self):
+        from tests.async_fixtures import run_together
+
+        failure, result = self.loop.run_until_complete(run_together(
+            self.wrapped(1, warn=True), self.wrapped(2)))
+        self.assertIsInstance(failure, AssertionError)
+        self.assertEqual(result, 2)
+
+    def test_inner_warning_capture_survives_await(self):
+        from tests.async_fixtures import capture_in_test
+
+        wrapped = deprecation.fail_if_not_removed(capture_in_test)
+        self.assertEqual(self.loop.run_until_complete(wrapped()), 1)
